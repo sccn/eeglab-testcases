@@ -1,0 +1,1 @@
+checkmmo_sub3;

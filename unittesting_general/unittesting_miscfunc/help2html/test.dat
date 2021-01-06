@@ -1,0 +1,94 @@
+% help2html() - Convert a Matlab m-file help-message header into an .html help file 
+%
+% Usage:
+%  >> linktext = help2html( filein, fileout, 'key1', val1, 'key2', val2 ...);
+%
+% Inputs:
+%   filein       - input filename  (with .m extension)
+%   fileout      - output filename (if empty, generated automatically)
+%
+% Optional inputs:
+%   'header'     - command to insert in the header (i.e. javascript 
+%                   declaration or meta-tags). {default: none}.
+%   'footer'     - command to insert at the end of the .html file (e.g., 
+%                   back button). {default: none}. 
+%   'refcall'    - syntax to call references. {default: '%s.html'} For
+%                  javascript function uses 'javascript:funcname(''%s.js'')'
+%   'font'       - font name
+%   'background' - background tag (i.e. '<body BACKGROUND="img.jpg">'). 
+%                   {default: none}.
+%   'outputlink' - html command text to link to the generated .html page. 
+%                  Must contain two '%s' symbols to the function title 
+%                  and to the function link.
+%                  Ex: ... href="%s.html" ... {default: standard .html href}. 
+%   'outputtext' - Text used in the outputlink. {default: the function
+%                  name}
+%   'outputonly' - ['on'|'off'] Only generate the linktext {default: 'off'}
+%
+% Output:
+%   fileout      - .html file written to disk
+%   linktext      - html-text link to the output file 
+%
+% M-file format:
+%   The following lines describe the header format of an m-file function 
+%   to allow .html help file generation. Characters '-' and ':' are used
+%   explicitly by the function for parsing.
+%                                               
+%%    function_name() - description line 1              
+%%                      description line 2       
+%%                      etc.                     
+%%                                               
+%%    Title1:                                     
+%%      descriptor1  - text line 1                 
+%%                     text line 2                 
+%%      descriptor2  - [type] text line 1                 
+%%      "descriptor 3" - text line 1 (see notes)                 
+%%                       etc.                        
+%%                                              
+%%    Title2:                                    
+%%      text line 1 [...](see notes)             
+%%      text line 2                              
+%%                                               
+%%    See also:                                  
+%%     function1(), function2()                     
+%    
+% Author:  Arnaud Delorme, Salk Institute 2001
+%
+% Notes: 1) The text lines below Title2 are considered as is (i.e.,
+%           preserving Matlab carriage returns) unless there is a 
+%           Matlab continuation cue ('...'). In this case, lines are 
+%           contcatenated. As below 'Title1', all text lines following
+%           each  descriptor (i.e., single_word followed by '-' or '='
+%           or multiple quoted words followed by a '-' or '=') 
+%           are concatenated. 
+%        2) The pattern 'function()' is detected and is printed in bold 
+%           if it is the first function descriptor. Otherwise,
+%           it is used as a web link to the .html function file 
+%           'function.html' if this exists.
+%        3) If a 'function.jpg' image file (with same 'function' name) exists, 
+%           the image is inserted into the function .html file following 
+%           the function description. If the .jpg file is absent, the function
+%           checks for the presence of a .gif file.
+%        4) Lines beginning by '%%' are not interpreted and will be printed as is.
+%        5) if [type] is present in a "descriptor2  - [type] text line 1"
+%           type is bolded.
+
+%123456789012345678901234567890123456789012345678901234567890123456789012
+
+% Copyright (C) 2001 Arnaud Delorme, Salk Institute, arno@salk.edu
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+return;    

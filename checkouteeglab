@@ -1,0 +1,5 @@
+\rm -r /data/common/matlab/eeglab-testcases/eeglabtmp
+mkdir /data/common/matlab/eeglab-testcases/eeglabtmp
+cd /data/common/matlab/eeglab
+git archive develop | tar -x -C /data/common/matlab/eeglab-testcases/eeglabtmp
+\rm /home/arno/eeg_options.m

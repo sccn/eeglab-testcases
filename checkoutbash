@@ -1,0 +1,5 @@
+#/bin/bash
+rm -f -r /data/common/matlab/eeglab-testcases/eeglabtmp
+cd /data/common/matlab/eeglab-testcases/
+git clone --recurse-submodules -b develop https://github.com/sccn/eeglab.git eeglabtmp
+

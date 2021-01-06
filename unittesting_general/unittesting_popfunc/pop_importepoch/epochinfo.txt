@@ -1,0 +1,11 @@
+Epoch	Response		Response_latency
+1		Correct			502
+2		Correct			477
+3		Correct			453
+4		Correct			612
+5		Correct			430
+6		Wrong			525
+7		Correct			498
+8		Correct			601
+9		Correct			398
+10		Correct			573

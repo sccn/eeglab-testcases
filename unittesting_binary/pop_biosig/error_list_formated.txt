@@ -1,0 +1,5 @@
+option_single = 1
+option_memmapdata = 0
+option_eegobject = 0
+option_computeica = 1
+option_donotusetoolboxes = 0

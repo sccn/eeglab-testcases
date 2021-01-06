@@ -1,0 +1,32 @@
+3	2
+//Probe file
+//Minor revision number
+1
+//ProbeName
+%N	Name    
+//Probe type, number of sensors
+0	70
+//Position of fiducials X+, Y+, Y- on the subject
+%F	0.1011	0.0000	0.0000
+%F	-0.0135	0.0731	0.0000
+%F	0.0135	-0.0731	0.0000
+//Sensor type
+%S	1C00
+//Sensor name and data for sensor # 1
+%N	REF     
+-0.0092	-0.0779	-0.0036
+//Sensor type
+%S	400
+//Sensor name and data for sensor # 2
+%N	FP1     
+0.1091	0.0102	0.0583
+//Sensor type
+%S	400
+//Sensor name and data for sensor # 3
+%N	FPZ     
+0.1176	-0.0184	0.0595
+//Sensor type
+%S	400
+//Sensor name and data for sensor # 4
+%N	FP2     
+0.1179	-0.0470	0.0565

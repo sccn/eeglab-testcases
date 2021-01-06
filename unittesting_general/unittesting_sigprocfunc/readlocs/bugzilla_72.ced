@@ -1,0 +1,4 @@
+Number  labels  theta   radius  X   Y   Z   sph_theta   sph_phi sph_radius type
+1   A2  -0  0.04    0.0219  0   0.174   0   82.8    0.175   'meg'
+2   A3  -0  0.0794  0.044   0   0.172   0   75.7    0.178   'meg'
+3   A4  -0  0.117   0.0655  0   0.17    0   68.9    0.182   'meg'
