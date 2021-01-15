@@ -39,7 +39,7 @@ else
         if ispc
             try
                 cd(newfolder);
-                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat', 'file', 'oldfold'); % save vars for script which use clear
+                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat', 'file', 'oldfold', 'prompt'); % save vars for script which use clear
                 eval( [ funcname ';' ] );
             catch
                 load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
@@ -51,7 +51,7 @@ else
         else
             try
                 cd(newfolder);
-                save('-mat', '/tmp/workspace.mat', 'file', 'oldfold'); % save vars for script which use clear
+                save('-mat', '/tmp/workspace.mat', 'file', 'oldfold', 'prompt'); % save vars for script which use clear
                 eval( [ funcname ';' ] );
             catch
                 load('-mat',  '/tmp/workspace.mat');
