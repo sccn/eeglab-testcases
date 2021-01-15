@@ -1,5 +1,13 @@
 % adding paths and clearing workspace
 % ------------------------------------------
+
+% adding path for testing
+% -----------------------
+tmpp = fileparts(which('runtest.m'));
+addpath(fullfile(tmpp, 'unittesting_common'));
+addpath(fullfile(tmpp, 'unittesting_common', 'helpfunc'));
+addpath(tmpp);
+
 clear;
 eeglab;
 close;
@@ -7,7 +15,7 @@ clear;
 
 try
     ismatlabflag = ismatlab;
-catch,
+catch
     ismatlabflag = 1;
 end
 
@@ -20,7 +28,7 @@ if ismatlabflag
             };
     else
         excludeFiles = { };
-    end;
+    end
 else
     % exclude for Octave
     excludeFiles = { ...
@@ -39,17 +47,17 @@ else
         }; % Octave 12 functions excluded out of 549
 end
 
+% Add data paths for tutorial scripts
+% -----------------------------------
+rootPath = fileparts(which('checkouteeglab'));
+addpath(fullfile(rootPath, 'STUDY5subjects'));
+addpath(fullfile(rootPath, 'ds002718'));
+
 % Current sub path
 % ----------------
 tmpp = pwd;
 indSeparators = find(tmpp == filesep);
 currentSubPath = tmpp(indSeparators(end)+1:end);
-
-% adding path for testing
-% -----------------------
-tmpp = fileparts(which('runtest.m'));
-addpath(fullfile(tmpp, 'helpfunc'));
-addpath(pwd);
 
 % performing testing
 % ------------------
@@ -57,12 +65,16 @@ testcases = dir(fullfile(pwd,'unittesting*'));
 if isempty(testcases) && ~isempty(findstr('unittesting', pwd))
     testcases = [];
     testcases.name = '';
-end;
+end
+eeglabPath = fileparts(which('eeglab'));
+testcases(2:end+1)    = testcases;
+testcases(1).name   = 'tutorial_scripts';
+testcases(1).folder = eeglabPath; % putting it first one the list makes sure it gets executed first
 for index = 1:length(testcases)
     if exist(testcases(index).name) == 7 && ~strcmpi(testcases(index).name, '..')
-        addpath(fullfile(pwd, testcases(index).name));
-    end;
-end;
+        addpath(fullfile(testcases(index).folder, testcases(index).name));
+    end
+end
 error_list = runtestcase(testcases, excludeFiles, 0);
 save('-mat', 'error_list.mat', 'error_list');
 formaterrorlist('error_list.mat');
@@ -78,7 +90,7 @@ if is_sccn
     tmpindx = find(rev== '-');
     if length(tmpindx) > 1
         rev = rev(1:tmpindx(2)-1);
-    end;
+    end
     revEEGLAB = eeg_getversion;
     revEEGLAB(find(revEEGLAB == ' '):end) = [];
     rev = [revEEGLAB ' GIT' rev];
@@ -107,41 +119,33 @@ if is_sccn
     fprintf(fid, ['<td>' rev '</td>' ]);
     if option_computeica, fprintf(fid, ['<td>x</td>' ]);
     else                  fprintf(fid, ['<td></td>' ]);
-    end;
+    end
     if option_single, fprintf(fid, ['<td>x</td>' ]);
     else              fprintf(fid, ['<td></td>' ]);
-    end;
+    end
     if option_memmapdata, fprintf(fid, ['<td>x</td>' ]);
     else                  fprintf(fid, ['<td></td>' ]);
-    end;
+    end
     if option_eegobject, fprintf(fid, ['<td>x</td>' ]);
     else                 fprintf(fid, ['<td></td>' ]);
-    end;
+    end
     if option_donotusetoolboxes, fprintf(fid, ['<td>x</td>' ]);
     else                         fprintf(fid, ['<td></td>' ]);
-    end;
+    end
     if isempty(error_list), fprintf(fid, ['<td>pass</td>' ]); 
     else                    fprintf(fid, ['<td><a href="unit_testing_results/' errorFile '">errors</a></td>' ]);
-    end;
+    end
     fprintf(fid, '</tr>');
     fclose(fid);
 
     % provide feedback to admin under Linux or OSX
     % --------------------------------------------
     [tmp, currentUser] = system('whoami');
-    if ~isempty(strfind(currentUser, 'arno'))
+    if ~contains(currentUser, 'arno')
         if ~isempty(error_list)
             system([ 'mail -n -s "' currentSubPath ' generated errors" arno@ucsd.edu < error_list_formated.txt' ]);
         else
             system([ 'echo "Do not forget to change revision number in Content.m" | mail -n -s "' currentSubPath ' no errors - ready to compile" arno@ucsd.edu' ]);
-        end
-    end
-
-    if ~isempty(strfind(currentUser, 'ramon'))
-        if ~isempty(error_list)
-            system([ 'mail -n -s "' currentSubPath ' generated errors" ramon@sccn.ucsd.edu < error_list_formated.txt' ]);
-        else
-            system([ 'echo "Do not forget to change revision number in Content.m" | mail -n -s "' currentSubPath ' no errors - ready to compile" ramon@sccn.ucsd.edu' ]);
         end
     end
 else
