@@ -1,6 +1,5 @@
 % adding paths and clearing workspace
 % ------------------------------------------
-[~,curFolder] = fileparts(pwd);
 
 % adding path for testing
 % -----------------------
@@ -15,6 +14,7 @@ clear;
 eeglab;
 close;
 clear;
+[~,curFolder] = fileparts(pwd);
 
 try
     ismatlabflag = ismatlab;
@@ -73,7 +73,7 @@ if exist(pathSave, 'dir')
     if ~exist(pathSave)
         mkdir(pathSave);
     end
-    formaterrorlist(fullfile(pathSave, [ curFolder '.txt' ]));
+    formaterrorlist('error_list.mat', fullfile(pathSave, [ curFolder '.txt' ]));
 else
     formaterrorlist('error_list.mat');
 end
