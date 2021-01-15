@@ -25,6 +25,15 @@ The use the get command to get the files
 git annex get
 ```
 
+Note that this is the list of remote
+
+```
+git remote -v
+origin	https://github.com/OpenNeuroDatasets/ds002718.git (fetch)
+origin	https://github.com/OpenNeuroDatasets/ds002718.git (push)
+s3-PUBLIC
+```
+
 # Clone our repository
 
 ```
@@ -53,9 +62,13 @@ git pull
 git annex get
 ```
 
-I can see that there is an additional remote for the OpenNeuro data
+Then we can reset it back to github to be able to make code changes and push them to Github
 
-git remote -v
-origin	https://github.com/OpenNeuroDatasets/ds002718.git (fetch)
-origin	https://github.com/OpenNeuroDatasets/ds002718.git (push)
-s3-PUBLIC
+```
+git remote rm origin
+git remote add origin https://github.com/sccn/eeglab-testcases
+```
+
+In our case, we do not have the special remote for git-annex as OpenNeuro does. Would be great to be able to fix that and not have to switch between remote.
+
+
