@@ -36,38 +36,31 @@ else
         fprintf('Evaluating %s ', file);
         oldfold = pwd;
         [newfolder, funcname, ext] = fileparts(file);
-        try
-            cd(newfolder);
-            eval( [ funcname ';' ] );
-        catch
-            errlist.function = file;
-            errlist.errmsg   = lasterror;
+        if ispc
+            try
+                cd(newfolder);
+                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat', 'file', 'oldfold'); % save vars for script which use clear
+                eval( [ funcname ';' ] );
+            catch
+                load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
+                errlist.function = file;
+                errlist.errmsg   = lasterror;
+                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
+            end
+            load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
+        else
+            try
+                cd(newfolder);
+                save('-mat', '/tmp/workspace.mat', 'file', 'oldfold'); % save vars for script which use clear
+                eval( [ funcname ';' ] );
+            catch
+                load('-mat',  '/tmp/workspace.mat');
+                errlist.function = file;
+                errlist.errmsg   = lasterror;
+                save('-mat', '/tmp/workspace.mat');
+            end
+            load('-mat',  '/tmp/workspace.mat');
         end
-%         if ispc
-%             try
-%                 cd(newfolder);
-%                 save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-%                 eval( [ funcname ';' ] );
-%             catch
-%                 load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-%                 errlist.function = file;
-%                 errlist.errmsg   = lasterror;
-%                 save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-%             end
-%             load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-%         else
-%             try
-%                 cd(newfolder);
-%                 save('-mat', '/tmp/workspace.mat');
-%                 eval( [ funcname ';' ] );
-%             catch
-%                 load('-mat',  '/tmp/workspace.mat');
-%                 errlist.function = file;
-%                 errlist.errmsg   = lasterror;
-%                 save('-mat', '/tmp/workspace.mat');
-%             end
-%             load('-mat',  '/tmp/workspace.mat');
-%         end
         cd(oldfold);
         fprintf('\n');
         if nargin > 2 && prompt == 1
