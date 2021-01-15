@@ -1,4 +1,4 @@
-# Install git annex (easiest is conda I guess)
+# Install git annex (easiest is probably using conda)
 
 See this doc https://git-annex.branchable.com/install/
 
