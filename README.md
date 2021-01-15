@@ -1,4 +1,3 @@
-```
 1. Install git annex (easiest is conda I guess)
 https://git-annex.branchable.com/install/
 
@@ -39,4 +38,3 @@ git remote -v
 origin	https://github.com/OpenNeuroDatasets/ds002718.git (fetch)
 origin	https://github.com/OpenNeuroDatasets/ds002718.git (push)
 s3-PUBLIC
-```
