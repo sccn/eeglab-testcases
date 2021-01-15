@@ -1,3 +1,3 @@
 [submodule "tutorial_scripts"]
-	path = tutorial_scripts
+	path = unittesting_tutorial
 	url = https://github.com/sccn/eeglab_tutorial_scripts.git

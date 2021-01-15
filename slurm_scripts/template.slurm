@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name="binary"
-#SBATCH --output="binary_%j.%N.out"
+#SBATCH --job-name="yyy"
+#SBATCH --output="/home/arno/nemar/unittestresults/logs/yyy_%j.%N.out"
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -13,6 +13,6 @@
 #SBATCH --mail-type=end
 #SBATCH -A csd403
 source ~/.bashrc
-cd /home/arno/nemar/eeglab-testcases/unittesting_binary
+cd /home/arno/nemar/eeglab-testcases/unittesting_yyy
 module load matlab
 matlab -nodisplay -nosplash -nodesktop < /home/arno/nemar/eeglab-testcases/runtest.m

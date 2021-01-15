@@ -1,0 +1,2 @@
+name=binary; sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm;
+
