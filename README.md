@@ -53,7 +53,7 @@ ok
 ```
 
 Doing a git annex get does not work.
-We need to reset the remote. Note that even if the SCCN repo is not a bare git repo, it is possible to use it to pull large files from it (usually one should only pull and push from bare git repositories (like Github repos, which only contain metadata, no actual files)). One may pull from a standard git repo but this is not something commonly done. However, git-annex can only execute pull (and get) from standard git repos (bare git repos are still used for smaller files).
+We need to reset the remote. Note that even if the SCCN repo is not a bare git repo, it is possible to use it to pull large files from it (usually one should only pull and push from bare git repositories (like Github repos, which only contain metadata, no actual files)). One may pull from a standard git repo but this is not something commonly done. However, git-annex can only execute pull (and get) from standard git repos (bare git repos are still used for small files not managed by git-annex).
 
 ```
 git remote rm origin
