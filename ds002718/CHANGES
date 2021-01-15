@@ -1,0 +1,13 @@
+1.0.4 2021-01-15
+  - Remove HED for now because of validation issue, use single files for EEGLAB
+1.0.3 2020-09-01
+  - Fixed typo in README file
+1.0.2 2020-05-26
+  - Rotation of channel montage to fit RAS coordinates
+Revision history for Face Recognition experiment by Wakeman-Henson
+
+version 1.0 - April 2020
+ - Initial release of EEG data in this experiment for EEGLAB education purposes 
+ 
+version 1.1 - May 2020
+ - Rotation of channel montage to fit RAS coordinates

@@ -1,0 +1,21 @@
+Multi-subject, multi-modal (sMRI+EEG) neuroimaging dataset
+on face processing. Original data described at https://www.nature.com/articles/sdata20151
+This is repackaged version of the EEG data in EEGLAB format. The data has gone through
+minimal preprocessing including (see wh_extracteeg_BIDS.m):
+- Ignoring fMRI and MEG data (sMRI preserved for EEG source localization)
+- Extracting EEG channels out of the MEG/EEG fif data
+- Adding fiducials
+- Renaming EOG and EKG channels
+- Extracting events from event channel
+- Removing spurious events 5, 6, 7, 13, 14, 15, 17, 18 and 19
+- Removing spurious event 24 for subject 3 run 4
+- Renaming events taking into account button assigned to each subject
+- Correcting event latencies (events have a shift of 34 ms)
+- Resampling data to 250 Hz (this is a step that is done because
+  this dataset is used as tutorial for EEGLAB and need to be lightweight)
+- Merging run 1 to 6
+- Removing event fields urevent and duration 
+- Filling up empty fields for events boundary and stim_file.
+- Saving as EEGLAB .set format
+
+Ramon Martinez, Dung Truong, Scott Makeig, Arnaud Delorme (UCSD, La Jolla, CA, USA)
