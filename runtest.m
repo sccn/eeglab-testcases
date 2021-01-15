@@ -1,5 +1,6 @@
 % adding paths and clearing workspace
 % ------------------------------------------
+[~,curFolder] = fileparts(pwd);
 
 % adding path for testing
 % -----------------------
@@ -66,7 +67,16 @@ currentSubPath = tmpp(indSeparators(end)+1:end);
 testcases = dir(pwd);
 error_list = runtestcase(testcases, excludeFiles, 0);
 save('-mat', 'error_list.mat', 'error_list');
-formaterrorlist('error_list.mat');
+pathSave = '/home/arno/nemar/unittestresults';
+if exist(pathSave, 'dir')
+    pathSave = fullfile(pathSave, datestr(now, 'YY_mm_dd'));
+    if ~exist(pathSave)
+        mkdir(pathSave);
+    end
+    formaterrorlist(fullfile(pathSave, [ curFolder '.txt' ]));
+else
+    formaterrorlist('error_list.mat');
+end
 
 if is_sccn
     % get revision info

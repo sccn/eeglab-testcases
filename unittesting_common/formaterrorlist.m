@@ -1,16 +1,20 @@
-function formaterrorlist(error_list);
+function formaterrorlist(error_list, fileName)
+
+if nargin < 2
+    fileName = 'error_list_formated.txt';
+end
 
 if isstr(error_list)
     load('-mat', error_list);
-end;
+end
 
-fid  = fopen('error_list_formated.txt', 'w');
+fid  = fopen(fileName, 'w');
 
 % write octave info
 if ~ismatlab
     fprintf(fid, 'Runnning Octave!\n');
     fprintf(fid, '----------------\n');
-end;
+end
 
 % write option file
 % -----------------
@@ -19,7 +23,7 @@ options = { 'option_single' 'option_memmapdata' 'option_eegobject' 'option_compu
 for ind =1:length(options)
     var = eval(options{ind});
     fprintf(fid, '%s = %d\n', options{ind}, var);    
-end;
+end
 
 % write errors
 % ------------
@@ -30,5 +34,5 @@ for index = 1:length(error_list)
     fprintf('function %s\n', error_list(index).function);
     fprintf('   msg %s\n'  , error_list(index).errmsg.message);
     fprintf('*********************************************\n');
-end;
+end
 fclose(fid);
