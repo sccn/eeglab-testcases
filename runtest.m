@@ -61,20 +61,7 @@ currentSubPath = tmpp(indSeparators(end)+1:end);
 
 % performing testing
 % ------------------
-testcases = dir(fullfile(pwd,'unittesting*'));
-if isempty(testcases) && ~isempty(findstr('unittesting', pwd))
-    testcases = [];
-    testcases.name = '';
-end
-eeglabPath = fileparts(which('eeglab'));
-testcases(2:end+1)    = testcases;
-testcases(1).name   = 'tutorial_scripts';
-testcases(1).folder = eeglabPath; % putting it first one the list makes sure it gets executed first
-for index = 1:length(testcases)
-    if exist(testcases(index).name) == 7 && ~strcmpi(testcases(index).name, '..')
-        addpath(fullfile(testcases(index).folder, testcases(index).name));
-    end
-end
+testcases = dir(pwd);
 error_list = runtestcase(testcases, excludeFiles, 0);
 save('-mat', 'error_list.mat', 'error_list');
 formaterrorlist('error_list.mat');
