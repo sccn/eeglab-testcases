@@ -5,3 +5,4 @@ unittesting_studyfunc/teststudy/s*/*.dat*
 unittesting_studyfunc/teststudy/s*/*.ica*
 unittesting_studyfunc/teststudy2/S0*/S0*.dat*
 unittesting_general/unittesting_miscfunc/headmovie/test.spline
+unittesting_miscfunc/headmovie/test.spline
