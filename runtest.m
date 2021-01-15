@@ -4,6 +4,7 @@
 % adding path for testing
 % -----------------------
 addpath('/home/arno/eeglab');
+addpath('/home/arno/nemar/eeglab-testcases');
 tmpp = fileparts(which('runtest.m'));
 addpath(fullfile(tmpp, 'unittesting_common'));
 addpath(fullfile(tmpp, 'unittesting_common', 'helpfunc'));
