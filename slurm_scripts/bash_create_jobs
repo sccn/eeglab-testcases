@@ -1,10 +1,10 @@
-name=adminfunc;   sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=binary;      sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=guifunc;     sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=limo;        sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=miscfunc;    sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=popfunc;     sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=sigprocfunc; sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=statistics;  sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=studyfunc;   sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=tutorial;    sed -e "s/yyy/$name/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=adminfunc;ram=4Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=binary;ram=4Gb;      sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=guifunc;ram=4Gb;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=limo;ram=12Gb;       sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=miscfunc;ram=4Gb;    sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=popfunc;ram=4Gb;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=sigprocfunc;ram=4Gb; sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=statistics;ram=4Gb;  sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=studyfunc;ram=4Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=tutorial;ram=12Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm

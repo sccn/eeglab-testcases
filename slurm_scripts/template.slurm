@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=4Gb
+#SBATCH --mem=xxx
 #SBATCH --export=ALL
 #SBATCH -t 10:00:00
 #SBATCH --mail-user=adelorme@ucsd.edu

@@ -58,8 +58,7 @@ chanlocs = [STUDY.filepath filesep 'limo_gp_level_chanlocs.mat'];
 
 % 1st level analysis
 STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off','defaultdesign','off',...
-    'variable1','type','values1',{'famous_new','famous_second_early','famous_second_late','scrambled_new','scrambled_second_early','scrambled_s
-econd_late','unfamiliar_new','unfamiliar_second_early','unfamiliar_second_late'},...
+    'variable1','type','values1',{'famous_new','famous_second_early','famous_second_late','scrambled_new','scrambled_second_early','scrambled_second_late','unfamiliar_new','unfamiliar_second_early','unfamiliar_second_late'},...
     'vartype1','categorical','subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011',
 'sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
 [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
@@ -165,8 +164,7 @@ fprintf('2nd vs. 1st&3rd presentation @ peak = %g uV CI=[%g %g]\n',TM(45,peaktim
 STUDY = std_makedesign(STUDY, ALLEEG, 2, 'name','Face_time','delfiles','off','defaultdesign','off',...
     'variable1','face_type','values1',{'famous','scrambled','unfamiliar'},'vartype1','categorical',...
     'variable2','time_dist','values2',[],'vartype2','continuous',...
-    'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-
-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
+    'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
 [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
 STUDY = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
 
