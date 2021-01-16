@@ -36,31 +36,17 @@ else
         fprintf('Evaluating %s ', file);
         oldfold = pwd;
         [newfolder, funcname, ext] = fileparts(file);
-        if ispc
-            try
-                cd(newfolder);
-                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat', 'file', 'oldfold', 'prompt'); % save vars for script which use clear
-                eval( [ funcname ';' ] );
-            catch
-                load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-                errlist.function = file;
-                errlist.errmsg   = lasterror;
-                save('-mat', 'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-            end
-            load('-mat',  'C:\Users\labadmin\AppData\Local\Temp\workspace.mat');
-        else
-            try
-                cd(newfolder);
-                save('-mat', '/tmp/workspace.mat', 'file', 'oldfold', 'prompt'); % save vars for script which use clear
-                eval( [ funcname ';' ] );
-            catch
-                load('-mat',  '/tmp/workspace.mat');
-                errlist.function = file;
-                errlist.errmsg   = lasterror;
-                save('-mat', '/tmp/workspace.mat');
-            end
-            load('-mat',  '/tmp/workspace.mat');
+        
+        % exectute function or script in subfunction to avoid having to
+        % save variables (plus issue with collision when running multiple functions
+        try
+            cd(newfolder);
+            execute_func(funcname);
+        catch
+            errlist.function = file;
+            errlist.errmsg   = lasterror;
         end
+    
         cd(oldfold);
         fprintf('\n');
         if nargin > 2 && prompt == 1
@@ -73,3 +59,6 @@ else
         end
     end
 end
+
+function execute_func(funcname)
+    eval( [ funcname ';' ] );
