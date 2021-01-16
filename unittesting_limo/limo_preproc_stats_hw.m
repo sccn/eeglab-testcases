@@ -66,6 +66,7 @@ econd_late','unfamiliar_new','unfamiliar_second_early','unfamiliar_second_late'}
 STUDY  = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
 
 % 2nd level analysis
+oldPath = pwd;
 mkdir([STUDY.filepath filesep '2-ways-ANOVA'])
 cd([STUDY.filepath filesep '2-ways-ANOVA'])
 limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
@@ -155,7 +156,7 @@ tmp = load([savename2(1:end-4) '_single_subjects_Weighted mean.mat']);
 effect_size = effect_size - tmp.Data.data;  % 1st/3rd vs 2nd
 TM = limo_trimmed_mean(squeeze(effect_size),0, 0.05);
 fprintf('2nd vs. 1st&3rd presentation @ peak = %g uV CI=[%g %g]\n',TM(45,peaktime,2),TM(45,peaktime,1),TM(45,peaktime,3))
-
+cd(oldPath)
 
 %% one-way ANOVA on time distance between trials for each face condition
 % ----------------------------------------------------------------------
@@ -171,6 +172,7 @@ STUDY = std_makedesign(STUDY, ALLEEG, 2, 'name','Face_time','delfiles','off','de
 STUDY = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
 
 % 2nd level analysis
+oldPath = pwd;
 mkdir([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
 cd([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
 limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
@@ -210,4 +212,5 @@ data = load('Yr.mat'); data = data.Yr([39 55],:,:,:);
 title('Average regression coef - channel 39 @556ms')
 [mean_reg55,ci_reg55]=data_plot(squeeze(data(2,157,:,:)),'estimator','mean');
 title('Average regression coef - channel 55 @572ms')
+cd(oldPath)
 
