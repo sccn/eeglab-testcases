@@ -13,7 +13,7 @@ filepath        = fileparts(which('participants.tsv'));
 [STUDY, ALLEEG] = pop_importbids(filepath, 'bidsevent','on','bidschanloc','on', 'studyName','Face_detection','outputdir', fullfile(filepath, 'derivatives'), 'eventtype', 'trial_type');
 ALLEEG = pop_select( ALLEEG, 'nochannel',{'EEG061','EEG062','EEG063','EEG064'});
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
-
+return
 %% Preprocessing
 % Remove bad channels
 EEG = pop_clean_rawdata( EEG,'FlatlineCriterion',5,'ChannelCriterion',0.8,...
