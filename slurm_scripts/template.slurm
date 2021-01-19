@@ -4,7 +4,7 @@
 #SBATCH --partition=shared
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=zzz
 #SBATCH --mem=xxx
 #SBATCH --export=ALL
 #SBATCH -t 10:00:00

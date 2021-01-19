@@ -1,10 +1,10 @@
-name=adminfunc;ram=4Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=binary;ram=4Gb;      sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=guifunc;ram=4Gb;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=limo;ram=12Gb;       sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=miscfunc;ram=4Gb;    sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=popfunc;ram=4Gb;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=sigprocfunc;ram=4Gb; sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=statistics;ram=4Gb;  sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=studyfunc;ram=4Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
-name=tutorial;ram=12Gb;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=adminfunc;ram=4Gb;cpus=2;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=binary;ram=4Gb;cpus=2;      sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=guifunc;ram=4Gb;cpus=2;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=limo;ram=12Gb;cpus=2;       sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=miscfunc;ram=4Gb;cpus=2;    sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=popfunc;ram=4Gb;cpus=2;     sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=sigprocfunc;ram=4Gb;cpus=2; sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=statistics;ram=4Gb;cpus=2;  sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=studyfunc;ram=4Gb;cpus=2;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm
+name=tutorial;ram=20Gb;cpus=2;   sed -e "s/yyy/$name/g" -e "s/xxx/$ram/g" -e "s/zzz/$cpus/g" template.slurm > unittesting_$name.slurm; sbatch unittesting_$name.slurm

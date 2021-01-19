@@ -12,7 +12,7 @@ end;
 % find the file
 % -------------
 p = fileparts(which('readsamplestudy'));
-[STUDY ALLEEG] = pop_loadstudy('filename', 'stern2s.study', 'filepath', fullfile(p,'teststudy2'));
+[STUDY ALLEEG] = pop_loadstudy('filename', 'stern2s.study', 'filepath', fullfile(p, '..', 'unittesting_studyfunc', 'teststudy2'));
 %[STUDY ALLEEG] = pop_loadstudy('filename', 'n400clustedit_missingdat.study', 'filepath', '/data/common4/arno/5subjects');
 STUDY = std_checkset(STUDY, ALLEEG);
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(ALLEEG)];
