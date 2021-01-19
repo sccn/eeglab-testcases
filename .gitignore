@@ -1,6 +1,8 @@
 error_list.mat
 error_list_formated.txt
 ds002718/derivatives/
+STUDY5subjects/s*/*.dat*
+STUDY5subjects/s*/*.ica*
 unittesting_studyfunc/teststudy/s*/*.dat*
 unittesting_studyfunc/teststudy/s*/*.ica*
 unittesting_studyfunc/teststudy2/S0*/S0*.dat*
