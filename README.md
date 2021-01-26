@@ -69,6 +69,6 @@ git remote rm origin
 git remote add origin https://github.com/sccn/eeglab-testcases
 ```
 
-In our case, we do not have the special remote for git-annex as OpenNeuro does. Would be great to be able to fix that and not have to switch between remote.
+Alternative: This is the way to set a special remote using SSH https://git-annex.branchable.com/special_remotes/git/.
 
 
