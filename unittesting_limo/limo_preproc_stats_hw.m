@@ -10,7 +10,7 @@ pop_editoptions( 'option_storedisk', 1);
  
 % call BIDS tool BIDS
 filepath        = fileparts(which('participants.tsv'));
-[STUDY, ALLEEG] = pop_importbids(filepath, 'bidsevent','on','bidschanloc','on', 'studyName','Face_detection','outputdir', fullfile(filepath, 'derivatives'), 'eventtype', 'trial_type');
+[STUDY, ALLEEG] = pop_importbids(filepath, 'bidsevent','on','bidschanloc','on', 'studyName','Face_detection','outputdir', fullfile(filepath, 'derivatives2'), 'eventtype', 'trial_type');
 ALLEEG = pop_select( ALLEEG, 'nochannel',{'EEG061','EEG062','EEG063','EEG064'});
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 return
@@ -51,11 +51,10 @@ eeglab redraw
 
 %% Statitiscal analysis
 % to restart the analysis from here - simply reload the STUDY see pop_loadstudy
-chanlocs = [STUDY.filepath filesep 'limo_gp_level_chanlocs.mat'];
 
 % two-way ANOVA faces * repetition
 % -------------------------------
-
+mode = 'OLS';
 % 1st level analysis
 STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off','defaultdesign','off',...
     'variable1','type','values1',{'famous_new','famous_second_early','famous_second_late','scrambled_new',...
@@ -63,14 +62,16 @@ STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off
     'vartype1','categorical','subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008',...
     'sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
 [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
-STUDY  = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
+STUDY  = pop_limo(STUDY, ALLEEG, 'method',mode,'measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
+%STUDY  = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
 
 % 2nd level analysis
 oldPath = pwd;
 mkdir([STUDY.filepath filesep '2-ways-ANOVA'])
 cd([STUDY.filepath filesep '2-ways-ANOVA'])
+chanlocs = [STUDY.filepath filesep 'limo_gp_level_chanlocs.mat'];
 limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
-    {[STUDY.filepath filesep 'LIMO_Face_detection' filesep 'Beta_files_design1_GLM_Channels_Time_WLS.txt']},...
+    {[STUDY.filepath filesep 'LIMO_Face_detection' filesep  'Beta_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']},...
     'analysis_type','Full scalp analysis','parameters',{[1 2 3],[4 5 6],[7 8 9]},...
     'factor names',{'face','repetition'},'type','Channels','nboot',1000,'tfce',0,'skip design check','yes');
 limo_eeg(5) % print signitifanct results and create LIMO.data.timevect
@@ -108,7 +109,7 @@ end
 
 % compute the mean ERPs to visualize differences
 Files = [STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep ...
-    'LIMO_files_FaceRepetition_GLM_Channels_Time_WLS.txt'];
+    'LIMO_files_FaceRepetition_GLM_Channels_Time_' mode '.txt'];
 parameters = [1 2 3];
 savename1  = [pwd filesep 'famous_faces.mat'];
 limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename1)
@@ -168,14 +169,14 @@ STUDY = std_makedesign(STUDY, ALLEEG, 2, 'name','Face_time','delfiles','off','de
     'variable2','time_dist','values2',[],'vartype2','continuous',...
     'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
 [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
-STUDY = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
+STUDY = pop_limo(STUDY, ALLEEG, 'method',mode,'measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
 
 % 2nd level analysis
 oldPath = pwd;
 mkdir([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
 cd([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
 limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
-    {[STUDY.filepath filesep 'LIMO_Face_detection' filesep 'Beta_files_Face_time_GLM_Channels_Time_WLS.txt']},...
+    {[STUDY.filepath filesep 'LIMO_Face_detection' filesep 'Beta_files_Face_time_GLM_Channels_Time_' mode '.txt']},...
     'analysis_type','Full scalp analysis','parameters',{4 5 6},...
     'factor names',{'face','repetition'},'type','Channels','nboot',1000,'tfce',0,'skip design check','yes');
 
