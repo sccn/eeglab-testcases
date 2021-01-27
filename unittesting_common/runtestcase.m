@@ -10,6 +10,7 @@ if isstruct(file) || exist(file) == 7
     % if it is a folder, scan content and evaluate
     if ~isstruct(file)
         foldercontent = dir(file);
+        [foldercontent(:).folder] = deal(file);
     else
         foldercontent = file;
     end

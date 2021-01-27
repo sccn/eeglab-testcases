@@ -1,5 +1,6 @@
 % adding paths and clearing workspace
 % ------------------------------------------
+runtest_setenvironment;
 
 % adding path for testing
 % -----------------------
@@ -37,20 +38,24 @@ if ismatlabflag
     end
 else
     % exclude for Octave
-    excludeFiles = { ...
-        'mmo' ...
-        'eegplotold' ...     % graphical issues
-        'eegplotsold' ...    % graphical issues
-        'eegplotgold' ...    % graphical issues
-        'eeglabexefolder' ... % Compiled version of EEGLAB
-        'openbdf' ...        % issue with missing functionality of fread 'bit24'
-        'readbdf' ...        % issue with missing functionality of fread 'bit24'
-        'hist2' ...          % unknown hggroup property Vertices - histogram plotted differently
-        'gradmap' ...        % Unknown interpolation method
-        'pop_read_erpss'     % mex file issue
-        'pop_signalstat' ... % require stats library normfit (not implemented)
-        'pop_eventstat' ...  % require stats library normfit (not implemented)
+    excludeFiles = { 'mmo' ''; 
+        'eegplotold'       'graphical issues';
+        'eegplotsold'      'graphical issues';
+        'eegplotgold'      'graphical issues';
+        'eeglabexefolder'  'Compiled version of EEGLAB';
+        'openbdf'          'issue with missing functionality of fread bit24';
+        'readbdf'          'issue with missing functionality of fread bit24';
+        'hist2'            'unknown hggroup property Vertices - histogram plotted differently';
+        'gradmap'          'Unknown interpolation method';
+        'pop_read_erpss'   'mex file issue';
+        'pop_signalstat'   'require stats library normfit (not implemented)';
+        'pop_eventstat'    'require stats library normfit (not implemented)';
+        'mapcorr'          'too slow';
+        'makehtml'         'error';
+        'textgui'          'error';
+        'copyaxis'         'seg fault';
         }; % Octave 12 functions excluded out of 549
+    excludeFiles(:,2) = [];
 end
 
 % Current sub path
@@ -62,6 +67,7 @@ currentSubPath = tmpp(indSeparators(end)+1:end);
 % performing testing
 % ------------------
 testcases = dir(pwd);
+[testcases(:).folder] = deal(pwd);
 error_list = runtestcase(testcases, excludeFiles, 0);
 save('-mat', 'error_list.mat', 'error_list');
 pathSave = '/home/arno/nemar/unittestresults';
