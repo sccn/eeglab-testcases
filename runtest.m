@@ -28,24 +28,23 @@ if ismatlabflag
     end
 else
     % exclude for Octave
-    excludeFiles = { 'mmo' ''; 
-        'eegplotold'       'graphical issues';
-        'eegplotsold'      'graphical issues';
-        'eegplotgold'      'graphical issues';
-        'eeglabexefolder'  'Compiled version of EEGLAB';
-        'openbdf'          'issue with missing functionality of fread bit24';
-        'readbdf'          'issue with missing functionality of fread bit24';
-        'hist2'            'unknown hggroup property Vertices - histogram plotted differently';
-        'gradmap'          'Unknown interpolation method';
-        'pop_read_erpss'   'mex file issue';
-        'pop_signalstat'   'require stats library normfit (not implemented)';
-        'pop_eventstat'    'require stats library normfit (not implemented)';
-        'mapcorr'          'too slow';
-        'makehtml'         'error';
-        'textgui'          'error';
-        'copyaxis'         'seg fault';
-        }; % Octave 12 functions excluded out of 549
-    excludeFiles(:,2) = [];
+    excludeFiles = { 'mmo' 
+        'eegplotold'       % graphical issues
+        'eegplotsold'      % graphical issues
+        'eegplotgold'      % graphical issues
+        'eeglabexefolder'  % Compiled version of EEGLAB'
+        'openbdf'          % issue with missing functionality of fread bit24
+        'readbdf'          % issue with missing functionality of fread bit24
+        'hist2'            % unknown hggroup property Vertices - histogram plotted differently
+        'gradmap'          % Unknown interpolation method
+        'pop_read_erpss'   % mex file issue
+        'pop_signalstat'   % require stats library normfit (not implemented)
+        'pop_eventstat'    % require stats library normfit (not implemented)
+        'mapcorr'          % too slow
+        'makehtml'         % error
+        'textgui'          % error
+        'copyaxis'         % seg fault
+        };
 end
 
 % Add data paths for tutorial scripts
