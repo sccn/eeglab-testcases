@@ -4,6 +4,16 @@ runtest_setenvironment;
 
 % adding path for testing
 % -----------------------
+addpath('/home/arno/eeglab');
+addpath('/home/arno/nemar/eeglab-testcases');
+tmpp = fileparts(which('runtest.m'));
+addpath(fullfile(tmpp, 'unittesting_common'));
+addpath(fullfile(tmpp, 'unittesting_common', 'helpfunc'));
+addpath(tmpp);
+rootPath = fileparts(which('checkouteeglab'));
+addpath(fullfile(rootPath, 'STUDY5subjects'));
+addpath(fullfile(rootPath, 'ds002718'));
+
 clear;
 eeglab;
 close;
@@ -46,12 +56,6 @@ else
         'copyaxis'         % seg fault
         };
 end
-
-% Add data paths for tutorial scripts
-% -----------------------------------
-rootPath = fileparts(which('checkouteeglab'));
-addpath(fullfile(rootPath, 'STUDY5subjects'));
-addpath(fullfile(rootPath, 'ds002718'));
 
 % Current sub path
 % ----------------
