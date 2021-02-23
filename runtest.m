@@ -26,19 +26,19 @@ catch
     ismatlabflag = 1;
 end
 
+excludeFiles = { 'runtest.m' 'scanfoldersendemail.m' 'checkouteeglab.m' ...
+    'ds002718' 'unittesting_tutorial' 'unittesting_common' 'unittesting_limo' };
 if ismatlabflag
     vers = eeg_getversion;
     if str2num(vers(1:2)) == 11
         % exclude for version 11
-        excludeFiles = { ... 
-            'mmo' ... % NOT IMPLEMENTED
-            };
+        excludeFiles = [ excludeFiles(:)' {'mmo'} % NOT IMPLEMENTED
+            ];
     else
-        excludeFiles = { };
     end
 else
     % exclude for Octave
-    excludeFiles = { 'mmo' 
+    excludeFiles = { excludeFiles{:} 'mmo' 
         'eegplotold'       % graphical issues
         'eegplotsold'      % graphical issues
         'eegplotgold'      % graphical issues
@@ -73,7 +73,12 @@ pathSave = '/home/arno/nemar/unittestresults';
 if exist(pathSave, 'dir')
     pathSave = fullfile(pathSave, datestr(now, 'YY_mm_dd'));
     if ~exist(pathSave)
-        mkdir(pathSave);
+        try
+            mkdir(pathSave);
+        catch
+            lasterror
+            formaterrorlist('error_list.mat');
+        end
     end
     formaterrorlist('error_list.mat', fullfile(pathSave, [ curFolder '.txt' ]));
 else
