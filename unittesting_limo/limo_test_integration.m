@@ -1,11 +1,11 @@
 %% limo_test_integration
 
 % Integration test for 1st level and 2nd level analyses
-% this assumes preprocessed data, single trials erp and STUDY present from the curated
-% Wakeman and Henson dataset https://openneuro.org/datasets/ds002718/versions/1.0.2
-% using preprocessing here https://github.com/LIMO-EEG-Toolbox/limo_meeg/blob/master/resources/from_bids2stats.m
-% + 3 groups (could be set randomly)
-%
+% depends upon Wakeman and Henson dataset https://openneuro.org/datasets/ds002718/versions/1.0.2
+% run the 'statndar' preprocessing pipeline then test 1st level integration
+% between STUDY and LIMO, followed by 2nd level analyses from 1st level
+% outputs
+% 
 % OUTPUT limotest is a cell array listing the (set of) tests performed as succesfull or failed
 %
 % tests std_limo with two different models (categorical only or categorical
@@ -24,9 +24,72 @@
 %          basic stats
 %          plotting
 
-% INPUT studyfullname full name (with path) of a study
 clear variables
-studyfullname = '/expanse/projects/nemar/eeglab-testcases/ds002718/derivatives2/Face_detection.study';
+% start EEGLAB
+[ALLEEG, EEG, CURRENTSET, ALLCOM] = eeglab;
+
+% call BIDS tool BIDS
+studypath       = fullfile('..', 'ds002718');
+
+try
+    rmdir(fullfile(studypath, 'derivatives_integration'), 's') 
+catch
+    lasterror
+end
+
+[STUDY, ALLEEG] = pop_importbids(studypath,'bidsevent','on','bidschanloc','on',...
+                  'studyName','Face_detection','outputdir', fullfile(studypath, 'derivatives_integration'), ...
+                  'eventtype', 'trial_type');
+ALLEEG          = pop_select( ALLEEG, 'nochannel',{'EEG061','EEG062','EEG063','EEG064'});
+CURRENTSTUDY    = 1;
+EEG             = ALLEEG;
+CURRENTSET      = 1:length(EEG);
+root            = fullfile(studypath, 'derivatives');
+
+% Remove bad channels
+% EEG = pop_clean_rawdata( EEG,'FlatlineCriterion',5,'ChannelCriterion',0.8,...
+%     'LineNoiseCriterion',4,'Highpass',[0.25 0.75] ,...
+%     'BurstCriterion','off','WindowCriterion','off','BurstRejection','off',...
+%     'Distance','Euclidian','WindowCriterionTolerances','off' );
+% 
+% % Rereference using average reference
+% EEG = pop_reref( EEG,[],'interpchan',[]);
+% 
+% % Run ICA and flag artifactual components using IClabel
+% for s=1:size(EEG,2)
+%     EEG(s) = pop_runica(EEG(s), 'icatype','picard','concatcond','on','options',{'pca',EEG(s).nbchan-1});
+%     EEG(s) = pop_iclabel(EEG(s),'default');
+%     EEG(s) = pop_icflag(EEG(s),[NaN NaN;0.8 1;0.8 1;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
+%     EEG(s) = pop_subcomp(EEG(s), find(EEG(s).reject.gcompreject), 0);
+% end
+% 
+% % clear data using ASR - just the bad epochs
+% EEG = pop_clean_rawdata( EEG,'FlatlineCriterion','off','ChannelCriterion','off',...
+%     'LineNoiseCriterion','off','Highpass','off','BurstCriterion',20,...
+%     'WindowCriterion',0.25,'BurstRejection','on','Distance','Euclidian',...
+%     'WindowCriterionTolerances',[-Inf 7] );
+
+% Extract data epochs (no baseline removed)
+EEG    = pop_epoch( EEG,{'famous_new','famous_second_early','famous_second_late', ...
+         'scrambled_new','scrambled_second_early','scrambled_second_late','unfamiliar_new', ...
+         'unfamiliar_second_early','unfamiliar_second_late'},[-0.5 1] ,'epochinfo','yes');
+EEG    = eeg_checkset(EEG);
+EEG    = pop_saveset(EEG, 'savemode', 'resave');
+ALLEEG = EEG;
+
+% update study & compute single trials
+STUDY        = std_checkset(STUDY, ALLEEG);
+[STUDY, EEG] = std_precomp(STUDY, EEG, {}, 'savetrials','on','interp','on','recompute','on',...
+    'erp','on','erpparams', {'rmbase' [-200 0]}, 'spec','off', 'ersp','off','itc','off');
+eeglab redraw
+
+% add 3 groups
+[STUDY.datasetinfo(1:6).group]   = deal('1');
+[STUDY.datasetinfo(7:13).group]  = deal('2');
+[STUDY.datasetinfo(14:18).group] = deal('3');
+
+
+%% test std_limo and 1st level GLM
 
 tic
 if exist(studyfullname,'file')
@@ -35,13 +98,17 @@ if exist(studyfullname,'file')
     %% load STUDY
     [STUDY, ALLEEG] = pop_loadstudy('filename', [std_name ext], 'filepath', root);
     % update to have 3 groups if not present
-   [STUDY.datasetinfo(1:6).group ]= deal('1');
-   [STUDY.datasetinfo(7:13).group ]= deal('2');
-   [STUDY.datasetinfo(14:18).group ]= deal('3');
+    [STUDY.datasetinfo(1:6).group ]= deal('1');
+    [STUDY.datasetinfo(7:13).group ]= deal('2');
+    [STUDY.datasetinfo(14:18).group ]= deal('3');
 
 else
     error('study file nout found')
 end
+
+% ------------------------------------------------------------
+%       LIMO TESTING STARTS HERE
+% ------------------------------------------------------------
 
 %% test std_limo and 1st level GLM
 
@@ -66,8 +133,10 @@ try
     
     % compute 1st model with OLS
     [STUDY, ~, Model1_files] = pop_limo(STUDY, ALLEEG, 'method','OLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
-    contrast.LIMO_files = Model1_files.mat; contrast.mat = [1 1 1 -1 -1 -1 0 0 0 0 ; 0 0 0 1 1 1 -1 -1 -1 0];
-    confiles = limo_batch('contrast only',[],contrast); Model1_files.con = confiles.con;
+    contrast.LIMO_files      = Model1_files.mat; 
+    contrast.mat             = [1 1 1 -1 -1 -1 0 0 0 0 ; 0 0 0 1 1 1 -1 -1 -1 0];
+    confiles                 = limo_batch('contrast only',[],contrast,STUDY); 
+    Model1_files.con         = confiles.con;
     clear confiles
     limotest{1} = 'categorical design + contrasts with OLS estimates successful';
 catch err
@@ -92,8 +161,10 @@ try
     
     % compute 1st model with WLS
     [STUDY, ~, Model2_files] = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
-    contrast.LIMO_files = Model2_files.mat; contrast.mat = [0 0 0 -1 0 1];
-    confiles = limo_batch('contrast only',[],contrast); Model2_files.con = confiles.con;
+    contrast.LIMO_files      = Model2_files.mat; 
+    contrast.mat             = [0 0 0 -1 0 1];
+    confiles                 = limo_batch('contrast only',[],contrast); % do not pass STUDY argument, should still figure it out
+    Model2_files.con         = confiles.con;
     clear confiles
     limotest{2} = 'mixed design with WLS estimates + contrast successful';
 catch err
@@ -103,10 +174,13 @@ end
 
 %% 2nd level analyses
 cd(root); mkdir('2nd_level_tests'); cd('2nd_level_tests');
+channel_vector = limo_best_electrodes(fullfile(limo_rootfiles, 'LIMO_files_Face_time_GLM_Channels_Time_WLS.txt'));
+save('virtual_electrode','channel_vector')
 
 % ---------------------------------------------------------------------
 % one sample t-test
 try
+    cd(root); cd('2nd_level_tests');
     % one sample t-test whole brain with a cell array of con files as input
     mkdir('one_sample'); cd('one_sample')
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
@@ -117,19 +191,17 @@ try
     % one sample t-test channel 50 file list of con files
     mkdir('one_sample50'); cd('one_sample50')
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
-        'LIMOfiles',[root filesep 'con1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
+        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
     cd .. ;
     
     % one sample t-test virtual channel - array of Betas
     mkdir('one_sampleOPT'); cd('one_sampleOPT')
-    channel_vector = limo_best_electrodes(fullfile(limo_rootfiles, 'LIMO_files_Face_time_GLM_Channels_Time_WLS.txt'));
     LIMOPath = limo_random_select('one sample t-test',STUDY.limo.chanloc,...
         'LIMOfiles',Model2_files.Beta, 'analysis_type','1 channel/component only', 'Channel',channel_vector, ...
         'type','Channels','parameter',{[1  3 7]},'nboot',101,'tfce',1);
     cd .. ;
     limotest{3} = 'one sample t-tests successful';
-    save('virtual_electrode','channel_vector')
 catch err
     fprintf('%s\n',err.message)
     limotest{3} = sprintf('one sample t-tests failed \n%s',err.message);
@@ -138,6 +210,7 @@ end
 % ---------------------------------------------------------------------
 % regression
 try
+    cd(root); cd('2nd_level_tests');
     % regression (calls similar routines as one sample)
     % regression whole brain with an array of con files as input and a matrix as regressor
     mkdir('regression'); cd('regression')
@@ -150,7 +223,7 @@ try
     mkdir('regression50'); cd('regression50')
     randomreg = randn(length(Model2_files.con),1); save('reg.mat','randomreg');
     LIMOPath = limo_random_select('regression',STUDY.limo.chanloc,'regressor_file',[pwd filesep 'reg.mat'],...
-        'LIMOfiles',[root filesep 'con1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
+        'LIMOfiles',[limo_rootfiles filesep 'con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'],...
         'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','zscore','yes','skip design check','yes','nboot',101,'tfce',1);
    cd .. ;
     
@@ -162,7 +235,7 @@ try
         'analysis_type','1 channel/component only', 'type','Channels', ...
         'Channel',fullfile(root,['2nd_level_tests' filesep 'virtual_electrode.mat']), ...
         'zscore','yes','skip design check','yes','nboot',101,'tfce',1);
-   cd .. ;
+    cd .. ;
     limotest{4} = 'regressions successful';
 catch err
     fprintf('%s\n',err.message)
@@ -172,6 +245,7 @@ end
 % ---------------------------------------------------------------------
 % paired t-test
 try
+    cd(root); cd('2nd_level_tests');
     % paired t-test whole brain with a cell array of con files as input
     clear data
     for N=length(STUDY.subject):-1:1
@@ -185,8 +259,8 @@ try
     
     % paired t-test channel 50 with file list of con files
     mkdir('paired_t-test50'); cd('paired_t-test50')
-    datafiles = {[root filesep 'con1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
-        [root filesep 'con2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
+    datafiles = {[limo_rootfiles filesep 'con_1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'], ...
+        [limo_rootfiles filesep 'con_2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']};
     LIMOPath = limo_random_select('paired t-test',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
          'analysis_type','1 channel/component only', 'Channel',50,'type','Channels','nboot',101,'tfce',1);
     cd .. ;
@@ -207,6 +281,7 @@ end
 % ---------------------------------------------------------------------
 % two samples t-test
 try
+    cd(root); cd('2nd_level_tests');
     % two-samples t-test whole brain with a cell array of con files as input
     mkdir('two-samples_t-test'); cd('two-samples_t-test')
     LIMOPath = limo_random_select('two-samples t-test',STUDY.limo.chanloc,...
@@ -220,7 +295,7 @@ try
     cd .. ;
     
     % two-samples t-test virtual channel with file list of Betas
-    mkdir('two-samples_t-testOPT'); cd('two-samples_t-testOPT')
+    mkdir('two-samples_t-testOPT'); cd('two-samples_t-testOPT'); clear Bfiles
     Bfiles{1} = [limo_rootfiles filesep 'Beta_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'];
     Bfiles{2} = [limo_rootfiles filesep 'Beta_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt'];
     LIMOPath = limo_random_select('two-samples t-test',STUDY.limo.chanloc,...
@@ -236,6 +311,7 @@ end
 % ---------------------------------------------------------------------
 % 1-way ANOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % N-Ways ANOVA whole brain with a cell array of con files as input with empty cells 
     clear data
     index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
@@ -250,18 +326,10 @@ try
     cd ..
     
     % N-Ways ANOVA channel 50 with file list of con files
-    clear data; index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
-    for s=1:length(index); data{s} = cell2mat(Model1_files.con{index(s)}(1)); end
-    cell2csv(fullfile(root, ['con1_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']),data')
-    clear data; index = find(arrayfun(@(x) contains(x.group,'2'), STUDY.datasetinfo));
-    for s=1:length(index); data{s} = cell2mat(Model1_files.con{index(s)}(1)); end
-    cell2csv(fullfile(root, ['con1_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']),data')
-    clear data; index = find(arrayfun(@(x) contains(x.group,'3'), STUDY.datasetinfo));
-    for s=1:length(index); data{s} = cell2mat(Model1_files.con{index(s)}(1)); end
-    cell2csv(fullfile(root, ['con1_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']),data')
-    datafiles = {fullfile(root, ['con1_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']), ...
-        fullfile(root, ['con1_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']),...
-        fullfile(root, ['con1_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'])};
+    % con per group files already exist split according to STUDY
+    datafiles = {fullfile(limo_rootfiles, ['con_1_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']), ...
+        fullfile(limo_rootfiles, ['con_1_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']),...
+        fullfile(limo_rootfiles, ['con_1_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt'])};
     
     mkdir('N-Ways ANOVA50'); cd('N-Ways ANOVA50')
     LIMOPath = limo_random_select('N-Ways ANOVA',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
@@ -288,6 +356,7 @@ end
 % ---------------------------------------------------------------------
 % 1-way ANCOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % N-Ways ANCOVA whole brain with a cell array of con files as input with empty cells 
     clear data
     index = find(arrayfun(@(x) contains(x.group,'1'), STUDY.datasetinfo));
@@ -332,6 +401,7 @@ end
 % ---------------------------------------------------------------------
 % Repeated measures ANOVA + contrast
 try
+    cd(root); cd('2nd_level_tests');
     % whole brain with Beta files as input
     mkdir('Rep-ANOVA'); cd('Rep-ANOVA')
     limo_random_select('Repeated Measures ANOVA',STUDY.limo.chanloc,'LIMOfiles',...
@@ -359,10 +429,10 @@ try
     cd ..
     
     % channel 50 with con files as input
-    clear datafiles
-    datafiles{1,1} = fullfile(root, ['con1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
-    datafiles{1,2} = fullfile(root, ['con1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt']); 
-    datafiles{1,3} = fullfile(root, ['con2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
+    clear datafiles % spurious design but we need enough subjects to run
+    datafiles{1,1} = fullfile(limo_rootfiles, ['con_1_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
+    datafiles{1,2} = fullfile(limo_rootfiles, ['con_1_files_' STUDY.design(2).name '_GLM_Channels_Time_WLS.txt']); 
+    datafiles{1,3} = fullfile(limo_rootfiles, ['con_2_files_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
     mkdir('Rep-ANOVA50'); cd('Rep-ANOVA50')
     limo_random_select('Repeated Measures ANOVA',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
         'analysis_type','1 channel/component only', 'Channel',50, 'factor names',{'face'},...
@@ -371,12 +441,12 @@ try
 
     % also use gp + con files + optimized channel
     clear datafiles; datafiles = cell(3,2);
-    datafiles{1,1} = fullfile(root, ['con1_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
-    datafiles{1,2} = fullfile(root, ['con2_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
-    datafiles{2,1} = fullfile(root, ['con1_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
-    datafiles{2,2} = fullfile(root, ['con2_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
-    datafiles{3,1} = fullfile(root, ['con1_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
-    datafiles{3,2} = fullfile(root, ['con2_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
+    datafiles{1,1} = fullfile(limo_rootfiles, ['con_1_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
+    datafiles{1,2} = fullfile(limo_rootfiles, ['con_2_files_Gp1_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
+    datafiles{2,1} = fullfile(limo_rootfiles, ['con_1_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
+    datafiles{2,2} = fullfile(limo_rootfiles, ['con_2_files_Gp2_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']); 
+    datafiles{3,1} = fullfile(limo_rootfiles, ['con_1_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
+    datafiles{3,2} = fullfile(limo_rootfiles, ['con_2_files_Gp3_' STUDY.design(1).name '_GLM_Channels_Time_OLS.txt']);
     mkdir('GpRep-ANOVAOPT'); cd('GpRep-ANOVAOPT')
     limo_random_select('Repeated Measures ANOVA',STUDY.limo.chanloc,'LIMOfiles',datafiles,...
         'analysis_type','1 channel/component only', 'Channel',channel_vector, 'factor names',{'face'},...
@@ -388,14 +458,9 @@ catch err
     limotest{9} = sprintf('Repeated measures ANOVA + contrast failed \n%s',err.message);
 end
 
-% ---------------------------------------------------------------------
-cd(root);
-if all(contains(limotest,'successful'))
-    disp('deleting all created files - test successful')
-    rmdir('2nd_level_tests','s');
-    % rmdir(limo_rootfiles,'s')
-else
-    warning('test failure - files were not deleted from drive')
-end
-toc
+
+
+
+
+
 

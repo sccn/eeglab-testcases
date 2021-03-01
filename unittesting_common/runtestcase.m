@@ -50,6 +50,7 @@ else
             catch
                 errlist.function = file.name;
                 errlist.errmsg   = lasterror;
+		pop_editoptions('option_memmapdata', 0);
             end
 
             cd(oldfold);

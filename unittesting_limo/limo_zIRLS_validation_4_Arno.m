@@ -4,8 +4,9 @@
 % 1 - downlad the data @
 % 2 - define where are those downloaded data
 % from here, it should run until all results are there
+clear variables
 
-studypath = 'F:\WakemanHenson_Faces\eeg';
+studypath = fullfile(pwd, '..', 'ds002718');
 
 %%  quick check
 if ~isfolder(studypath)
@@ -28,10 +29,16 @@ if ~exist('limo_test_glmboot.m','file')
     error('get/set limo validation tools to check type 1 error')
 end
 
+try
+    rmdir(fullfile(studypath, 'derivative_IRLS'), 's') 
+catch
+    lasterror
+end
+
 %% get the data
-clear variables
 [ALLEEG, EEG, CURRENTSET, ALLCOM] = eeglab;
-[STUDY, ALLEEG] = pop_importbids(studypath, 'bidsevent','on','bidschanloc','on', 'studyName','Face_detection');
+[STUDY, ALLEEG] = pop_importbids(studypath, 'bidsevent','on','bidschanloc','on', 'studyName','Face_detection', 'eventtype', 'trial_type', 'outputdir' , fullfile(studypath, 'derivative_IRLS'));
+STUDY.studypath = fullfile(studypath, 'derivative_IRLS');
 ALLEEG = pop_select( ALLEEG, 'nochannel',{'EEG061','EEG062','EEG063','EEG064'});
 CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = 1:length(EEG);
 
@@ -47,7 +54,7 @@ EEG = pop_reref( EEG,[],'interpchan',[]);
 
 % Run ICA and flag artifactual components using IClabel
 for s=1:size(EEG,2)
-    EEG(s) = pop_runica(EEG(s), 'icatype','runica','concatcond','on','options',{'pca',EEG(s).nbchan-1});
+    EEG(s) = pop_runica(EEG(s), 'icatype','picard','concatcond','on','options',{'pca',EEG(s).nbchan-1});
     EEG(s) = pop_iclabel(EEG(s),'default');
     EEG(s) = pop_icflag(EEG(s),[NaN NaN;0.8 1;0.8 1;NaN NaN;NaN NaN;NaN NaN;NaN NaN]);
     EEG(s) = pop_subcomp(EEG(s), find(EEG(s).reject.gcompreject), 0);
@@ -81,23 +88,20 @@ eeglab redraw
 STUDY = pop_limo(STUDY, ALLEEG, 'method','IRLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
 eeglab redraw
 
-
 %% bootstrap subjects (under the null) to check type 1 error rates
 % this takes a very long time 
 
 for s=1:size(STUDY.datasetinfo,2)
     fprintf('running bootstrap on subject %g\n',s)
-    LIMO = load(fullfile(STUDY.datasetinfo(s).filepath,['FaceRepAll_GLM_Channels_Time_IRLS' filesep 'LIMO.mat']));
+    LIMO = load(fullfile(STUDY.datasetinfo(s).filepath,['FaceRepetition_GLM_Channels_Time_IRLS' filesep 'LIMO.mat']));
     LIMO = LIMO.LIMO; LIMO.design.bootstrap = 2500; LIMO.design.status = 'to do';
     save(fullfile(LIMO.dir,'LIMO.mat'),'LIMO'); try rmdir([LIMO.dir filesep 'H0'],'s'); end
-    H0iw{s} = fullfile(STUDY.datasetinfo(s).filepath,['FaceRepAll_GLM_Channels_Time_IRLS' filesep 'H0']);
+    H0iw{s} = fullfile(STUDY.datasetinfo(s).filepath,['FaceRepetition_GLM_Channels_Time_IRLS' filesep 'H0']);
     limo_eeg(4,LIMO)
 end
 
 % use 1500 for the null and 1000 for testing
-[results.errIRLS,results.ci_errIRLS,...
-    results.maxIRLS,results.maxci_errIRLS,...
-    results.clusterIRLS,results.maxcic_errIRLS] = limo_test_glmboot(chanlocs,H0iw,'step_size',300,'Nboot',1000,'MinSamp',300);
+[results.errIRLS,results.ci_errIRLS,results.maxIRLS,results.maxci_errIRLS,results.clusterIRLS,results.maxcic_errIRLS] = limo_test_glmboot(chanlocs,H0iw,'step_size',300,'Nboot',1000,'MinSamp',300);
 save results results
 
 

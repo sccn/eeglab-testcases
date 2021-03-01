@@ -21,6 +21,10 @@ function [avg_err,ci_err,max_err,maxci_err,maxc_err,maxcic_err] = limo_test_glmb
 %
 % Cyril Pernet January 2021
 
+if nargin < 1
+    return;
+end
+
 % defaults
 alphavalue  = 0.05;
 figurevalue = 'on';
