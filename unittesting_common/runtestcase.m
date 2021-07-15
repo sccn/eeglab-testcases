@@ -38,7 +38,7 @@ else
     else
         % if it is a Matlab file, simply evaluate it
         [~, funcname, ext] = fileparts(file.name);
-        if strcmpi(ext, '.mlx') || strcmpi(ext, '.m')
+        if strcmpi(ext, '.m') % || strcmpi(ext, '.mlx') % some MLX files have questdlg
             fprintf('Evaluating %s ', file.name);
             oldfold = pwd;
 
@@ -50,7 +50,7 @@ else
             catch
                 errlist.function = file.name;
                 errlist.errmsg   = lasterror;
-		pop_editoptions('option_memmapdata', 0);
+                pop_editoptions('option_memmapdata', 0);
             end
 
             cd(oldfold);
