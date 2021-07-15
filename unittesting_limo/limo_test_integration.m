@@ -29,7 +29,8 @@ clear variables
 [ALLEEG, EEG, CURRENTSET, ALLCOM] = eeglab;
 
 % call BIDS tool BIDS
-studypath       = fullfile('..', 'ds002718');
+studypath       = fullfile(pwd, '..', 'ds002718');
+studyName = 'Face_detection';
 
 try
     rmdir(fullfile(studypath, 'derivatives_integration'), 's') 
@@ -38,7 +39,7 @@ catch
 end
 
 [STUDY, ALLEEG] = pop_importbids(studypath,'bidsevent','on','bidschanloc','on',...
-                  'studyName','Face_detection','outputdir', fullfile(studypath, 'derivatives_integration'), ...
+                  'studyName',studyName,'outputdir', fullfile(studypath, 'derivatives_integration'), ...
                   'eventtype', 'trial_type');
 ALLEEG          = pop_select( ALLEEG, 'nochannel',{'EEG061','EEG062','EEG063','EEG064'});
 CURRENTSTUDY    = 1;
@@ -90,6 +91,7 @@ eeglab redraw
 
 
 %% test std_limo and 1st level GLM
+studyfullname = fullfile(studypath, 'derivatives_integration', [ studyName '.study' ]);
 
 tic
 if exist(studyfullname,'file')
