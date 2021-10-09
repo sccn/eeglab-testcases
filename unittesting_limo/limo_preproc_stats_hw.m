@@ -1,6 +1,21 @@
 % BIDS Tools / EEGLAB / LIMO EEG 
 % data analysis of Wakeman and Henson 2015 data
-%eeglab; plugin_askinstall('bids-matlab-tools', 'pop_importbids', true)
+% tests the full preprocessing pipeline            - bids_import
+%                                                  - pop_clean_raw for bad channels
+%                                                  - datapop_reref
+%                                                  - pop_runica/pop_iclabel/pop_icflag/pop_subcomp
+%                                                  - pop_clean_rawdata for bad epochs
+%                                                  - pop_epoch
+%                                                  - std_precomp
+% computes LIMO 1st level GLM with 2nd level ANOVA - std_makedesign/pop_limo/limo_random_select
+% test all basic stats & plotting options          - limo_get_files/limo_batch (contrasts only)
+%                                                  - limo_central_tendency_and_ci
+%                                                  - limo_add_plots
+%                                                  - limo_plot_difference
+%                                                  - limo_eeg(5,LIMO) = printing results
+%                                        
+% for full testing of LIMO stats see limo_test_integration.m
+% eeglab; plugin_askinstall('bids-matlab-tools', 'pop_importbids', true)
 
 %% Import
 % start EEGLAB
@@ -49,12 +64,11 @@ STUDY  = std_checkset(STUDY, ALLEEG);
     'erp','on','erpparams', {'rmbase' [-200 0]}, 'spec','off', 'ersp','off','itc','off');
 eeglab redraw
 
-%% Statitiscal analysis
-% to restart the analysis from here - simply reload the STUDY see pop_loadstudy
+%% Statitiscal analysis (same as limo_integration_test except full 1000 boostraps and no tfce)
 
 % two-way ANOVA faces * repetition
 % -------------------------------
-mode = 'OLS';
+mode = 'WLS';
 % 1st level analysis
 STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off','defaultdesign','off',...
     'variable1','type','values1',{'famous_new','famous_second_early','famous_second_late','scrambled_new',...
@@ -63,10 +77,8 @@ STUDY = std_makedesign(STUDY, ALLEEG, 1, 'name','FaceRepetition','delfiles','off
     'sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
 [STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
 STUDY  = pop_limo(STUDY, ALLEEG, 'method',mode,'measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
-%STUDY  = pop_limo(STUDY, ALLEEG, 'method','WLS','measure','daterp','timelim',[-50 650],'erase','on','splitreg','off','interaction','off');
 
 % 2nd level analysis
-oldPath = pwd;
 mkdir([STUDY.filepath filesep '2-ways-ANOVA'])
 cd([STUDY.filepath filesep '2-ways-ANOVA'])
 chanlocs = [STUDY.filepath filesep 'limo_gp_level_chanlocs.mat'];
@@ -74,143 +86,104 @@ limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
     {[STUDY.filepath filesep 'LIMO_Face_detection' filesep  'Beta_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']},...
     'analysis_type','Full scalp analysis','parameters',{[1 2 3],[4 5 6],[7 8 9]},...
     'factor names',{'face','repetition'},'type','Channels','nboot',1000,'tfce',0,'skip design check','yes');
-limo_eeg(5) % print signitifanct results and create LIMO.data.timevect
 
-% make topoplots
-LIMO  = load('LIMO.mat'); LIMO = LIMO.LIMO;
-stats = load('Rep_ANOVA_Main_effect_1_face.mat');
-stats = stats.(cell2mat(fieldnames(stats)));
-stats = squeeze(stats(:,:,1)); % keep F values
-cc    = limo_color_images(stats);
-opt   = {'electrodes','on','maplimits','maxmin','verbose','off','colormap', cc};
-% cluster 1 starts at 140ms ends at 424ms, maximum F values 64.1281 at 280ms on channel EEG017
-% cluster 2 starts at 440ms ends at 648ms, maximum F value 17.6071 at 616ms on channel EEG057
-time = [49 59 84 120 124 168 176];
-figure('Name','Topoplot Main face effect')
-for t = 1:length(time)
-    subplot(2,ceil(length(time)/2),t);
-    topoplot(squeeze(stats(:,time(t),:)),LIMO.data.chanlocs,opt{:});
-    title(sprintf('%g ms',LIMO.data.timevect(time(t))))
-end
+%% test computing, plotting, printing results
 
-stats = load('Rep_ANOVA_Main_effect_2_repetition.mat');
-stats = stats.(cell2mat(fieldnames(stats)));
-stats = squeeze(stats(:,:,1)); % keep F values
-cc    = limo_color_images(stats);
-opt   = {'electrodes','on','maplimits','maxmin','verbose','off','colormap', cc};
-% cluster starts at 232ms ends at 648ms, maximum F value 51.3596 at 612ms channel EEG045
-time = [72 167 176];
-figure('Name','Topoplot Main repetition effect')
-for t = 1:length(time)
-    subplot(1,length(time),t);
-    topoplot(squeeze(stats(:,time(t),:)),LIMO.data.chanlocs,opt{:});
-    title(sprintf('%g ms',LIMO.data.timevect(time(t))))
-end
-
-% compute the mean ERPs to visualize differences
+mkdir('ERPs'); cd('ERPs');
+% compute unweigted ERPs
 Files = [STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep ...
     'LIMO_files_FaceRepetition_GLM_Channels_Time_' mode '.txt'];
 parameters = [1 2 3];
-savename1  = [pwd filesep 'famous_faces.mat'];
+savename1  = [pwd filesep 'famous_faces'];
+limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Mean', 'Mean', [],savename1)
+parameters = [4 5 6];
+savename2  = [pwd filesep 'srambled_faces'];
+limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Mean', 'Mean', [],savename2)
+parameters = [7 8 9];
+savename3  = [pwd filesep 'unfamiliar_faces'];
+limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Mean', 'Mean', [],savename3)
+limo_add_plots({[savename1 '_Mean_of_mean.mat'],[savename2 '_Mean_of_mean.mat'],[savename3 '_Mean_of_mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50); title('Mean Face types at channel 50')
+
+% compute weighted ERPs
+parameters = [1 2 3];
+savename1  = [pwd filesep 'famous_faces'];
 limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename1)
 parameters = [4 5 6];
-savename2  = [pwd filesep 'srambled_faces.mat'];
+savename2  = [pwd filesep 'srambled_faces'];
 limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename2)
 parameters = [7 8 9];
-savename3  = [pwd filesep 'unfamiliar_faces.mat'];
+savename3  = [pwd filesep 'unfamiliar_faces'];
 limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename3)
-limo_add_plots([savename1(1:end-4) '_Mean_of_Weighted mean.mat'],...
-    [savename2(1:end-4) '_Mean_of_Weighted mean.mat'],[savename3(1:end-4) '_Mean_of_Weighted mean.mat'],...
-    'channel',50); title('Face type at channel 50')
-% get a measure of raw effect size based on famous faces peak
-tmp = load([savename1(1:end-4) '_Mean_of_Weighted mean.mat']);
-[~,peaktime]=min(tmp.Data.mean(50,:,2));
-tmp = load([savename1(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = tmp.Data.data;
-tmp = load([savename3(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = (effect_size + tmp.Data.data)./2; % mean of faces
-tmp = load([savename2(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = effect_size - tmp.Data.data;  % faces vs scrambled
-TM = limo_trimmed_mean(squeeze(effect_size),0, 0.05);
-fprintf('Faces vs. Scrambled @ peak = %g uV CI=[%g %g]\n',TM(50,peaktime,2),TM(50,peaktime,3),TM(50,peaktime,1))
+limo_add_plots({[savename1 '_Mean_of_Weighted mean.mat'],[savename2 '_Mean_of_Weighted mean.mat'],[savename3 '_Mean_of_Weighted mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50); title('Weighted mean Face types at channel 50')
 
-parameters = [1 4 7];
-savename1  = [pwd filesep 'first_time.mat'];
-limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename1)
-parameters = [2 5 8];
-savename2  = [pwd filesep 'second_time.mat'];
-limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename2)
-parameters = [3 6 9];
-savename3  = [pwd filesep 'third_time.mat'];
-limo_central_tendency_and_ci(Files, parameters, chanlocs, 'Weighted mean', 'Mean', [],savename3)
-limo_add_plots([savename1(1:end-4) '_Mean_of_Weighted mean.mat'],...
-    [savename2(1:end-4) '_Mean_of_Weighted mean.mat'],[savename3(1:end-4) '_Mean_of_Weighted mean.mat'],...
-    'channel',45); title('Repetition effect at channel 45')
-% get a measure of raw effect size based on 2nd repetition peak
-tmp = load([savename2(1:end-4) '_Mean_of_Weighted mean.mat']);
-[~,peaktime]=max(tmp.Data.mean(45,:,2));
-tmp = load([savename1(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = tmp.Data.data;
-tmp = load([savename3(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = (effect_size + tmp.Data.data)./2; % mean of 1st and 3rd presentation
-tmp = load([savename2(1:end-4) '_single_subjects_Weighted mean.mat']);
-effect_size = effect_size - tmp.Data.data;  % 1st/3rd vs 2nd
-TM = limo_trimmed_mean(squeeze(effect_size),0, 0.05);
-fprintf('2nd vs. 1st&3rd presentation @ peak = %g uV CI=[%g %g]\n',TM(45,peaktime,2),TM(45,peaktime,1),TM(45,peaktime,3))
-cd(oldPath)
+% plot these results again and also subject wise
+figure
+subplot(1,3,1); 
+limo_add_plots({[savename1 '_Mean_of_mean.mat'],[savename1 '_Mean_of_Weighted mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50,'figure','hold'); 
+title('mean and weighed mean Famous Faces','Fontsize',12)
+subplot(1,3,2); 
+limo_add_plots({[savename2 '_Mean_of_mean.mat'],[savename2 '_Mean_of_Weighted mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50,'figure','hold'); 
+title('mean and weighed mean srambled Faces','Fontsize',12)
+subplot(1,3,3); 
+limo_add_plots({[savename3 '_Mean_of_mean.mat'],[savename3 '_Mean_of_Weighted mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50,'figure','hold'); 
+title('mean and weighed mean unfamiliar Faces','Fontsize',12)
 
-%% one-way ANOVA on time distance between trials for each face condition
-% ----------------------------------------------------------------------
-
-% 1st level analysis
-
-STUDY = std_makedesign(STUDY, ALLEEG, 2, 'name','Face_time','delfiles','off','defaultdesign','off',...
-    'variable1','face_type','values1',{'famous','scrambled','unfamiliar'},'vartype1','categorical',...
-    'variable2','time_dist','values2',[],'vartype2','continuous',...
-    'subjselect',{'sub-002','sub-003','sub-004','sub-005','sub-006','sub-007','sub-008','sub-009','sub-010','sub-011','sub-012','sub-013','sub-014','sub-015','sub-016','sub-017','sub-018','sub-019'});
-[STUDY, EEG] = pop_savestudy( STUDY, EEG, 'savemode','resave');
-STUDY = pop_limo(STUDY, ALLEEG, 'method',mode,'measure','daterp','timelim',[-50 650],'erase','on','splitreg','on','interaction','off');
-
-% 2nd level analysis
-oldPath = pwd;
-mkdir([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
-cd([STUDY.filepath filesep 'derivatives' filesep '1-way-ANOVA'])
-limo_random_select('Repeated Measures ANOVA',chanlocs,'LIMOfiles',...
-    {[STUDY.filepath filesep 'LIMO_Face_detection' filesep 'Beta_files_Face_time_GLM_Channels_Time_' mode '.txt']},...
-    'analysis_type','Full scalp analysis','parameters',{4 5 6},...
-    'factor names',{'face','repetition'},'type','Channels','nboot',1000,'tfce',0,'skip design check','yes');
-
-% add contrast
-load('LIMO.mat')
-LIMO.contrast{1}.C = [1 -05 -05 0];             % set contrast, note the last column 0 for constant`
-LIMO.contrast{1}.V = 'F';                       % always F test for repeated measure ANOVA`
-limo_contrast([pwd filesep 'Yr.mat'], LIMO, 3); % run the contrast
-limo_contrast([pwd filesep 'Yr.mat'], LIMO, 4)  % apply bootstrap
-save LIMO LIMO
-
-% make topoplots
-stats = load('ess_1.mat');
-stats = stats.(cell2mat(fieldnames(stats)));
-stats = squeeze(stats(:,:,end-1)); % keep F values
-[peakchannel,peaktime]=ind2sub(size(stats),find(stats == max(stats(:))));
-cc    = limo_color_images(stats);
-opt   = {'electrodes','on','maplimits','maxmin','verbose','off','colormap', cc};
-% cluster 1 starts at 536ms ends at 576ms, maximum 15.1112 @ 556ms channel EEG039
-% cluster 2 starts at 548ms ends at 584ms, maximum 9.58689 @ 572ms channel EEG055
-time = [148 153 158 151 157 160];
-timevect = LIMO.data.start:1/LIMO.data.sampling_rate*1000:LIMO.data.end;
-figure('Name','Topoplot effect of time famous faces more than others')
-for t = 1:length(time)
-    subplot(2,ceil(length(time)/2),t);
-    topoplot(squeeze(stats(:,time(t),:)),LIMO.data.chanlocs,opt{:});
-    title(sprintf('%g ms',timevect(time(t))))
+figure
+for subject = 1:18
+    subplot(3,6,subject);
+    limo_add_plots({[savename1 '_single_subjects_Mean.mat'],[savename1 '_single_subjects_Weighted mean.mat'],...
+        [savename2 '_single_subjects_Mean.mat'],[savename2 '_single_subjects_Weighted mean.mat'],...
+        [savename3 '_single_subjects_Mean.mat'],[savename3 '_single_subjects_Weighted mean.mat']},...
+        [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'variable',subject,'channel',50,'figure','hold');
+    title(['subject: ' num2str(subject)],'Fontsize',12)
 end
 
-% extract regression parameters to make 2D plots at max channels
-data = load('Yr.mat'); data = data.Yr([39 55],:,:,:);
-[mean_reg39,ci_reg39]=data_plot(squeeze(data(1,153,:,:)),'estimator','mean');
-title('Average regression coef - channel 39 @556ms')
-[mean_reg55,ci_reg55]=data_plot(squeeze(data(2,157,:,:)),'estimator','mean');
-title('Average regression coef - channel 55 @572ms')
-cd(oldPath)
+% compute mean Betas via contrast
+cd ..
+[~,~,Files] = limo_get_files([],[],[],[STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep ...
+    'LIMO_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']);
+contrast.LIMO_files = Files;
+contrast.mat = [1 1 1 0 0 0 0 0 0 0; 0 0 0 1 1 1 0 0 0 0;0 0 0 0 0 0 1 1 1 0]; % average repetition levels
+limo_batch('contrast only',[],contrast);
+
+mkdir('famous_faces'); cd('famous_faces')
+limo_random_select('one sample t-test',chanlocs,'LIMOfiles',...
+    {[STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep 'con_1_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']},...
+    'analysis_type','Full scalp analysis','type','Channels','nboot',0,'tfce',0); 
+savename1 =  [pwd filesep 'famous_faces']; limo_central_tendency_and_ci([pwd filesep 'Yr.mat'], 'Mean', 50,savename1); cd ..
+
+mkdir('scrambled_faces'); cd('scrambled_faces')
+limo_random_select('one sample t-test',chanlocs,'LIMOfiles',...
+    {[STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep 'con_2_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']},...
+    'analysis_type','Full scalp analysis','type','Channels','nboot',0,'tfce',0); 
+savename2 =  [pwd filesep 'scrambled_faces']; limo_central_tendency_and_ci([pwd filesep 'Yr.mat'], 'Mean', 50,savename2); cd ..
+
+mkdir('unfamiliar_faces'); cd('unfamiliar_faces')
+limo_random_select('one sample t-test',chanlocs,'LIMOfiles',...
+    {[STUDY.filepath filesep 'LIMO_' STUDY.filename(1:end-6) filesep 'con_3_files_FaceRepetition_GLM_Channels_Time_' mode '.txt']},...
+    'analysis_type','Full scalp analysis','type','Channels','nboot',0,'tfce',0); 
+savename3 =  [pwd filesep 'unfamiliar_faces']; limo_central_tendency_and_ci([pwd filesep 'Yr.mat'], 'Mean', 50,savename3); cd ..
+
+limo_add_plots({[savename1 '_Mean.mat'],[savename2 '_Mean.mat'],[savename3 '_Mean.mat']},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50); title('Means at channel 50')
+
+% compute the difference faces vs scrambled from the betas
+limo_plot_difference(fullfile(pwd,['famous_faces' filesep 'Yr.mat']),...
+    fullfile(pwd,['scrambled_faces' filesep 'Yr.mat']), 'LIMO',fullfile(pwd,'LIMO.mat'),...
+    'type','paired','percent', 20, 'alpha', 0.05, 'fig', 'on', 'name',fullfile(pwd,'diff_to_famous'));
+limo_plot_difference(fullfile(pwd,['unfamiliar_faces' filesep 'Yr.mat']),...
+    fullfile(pwd,['scrambled_faces' filesep 'Yr.mat']), 'LIMO',fullfile(pwd,'LIMO.mat'),...
+    'type','paired','percent', 20, 'alpha', 0.05, 'fig', 'on', 'name',fullfile(pwd,'diff_to_unfamiliar'));
+
+% re-plot this together
+limo_add_plots({fullfile(pwd,'diff_to_famous'),fullfile(pwd,'diff_to_unfamiliar')},...
+    [STUDY.filepath filesep '2-ways-ANOVA' filesep 'LIMO.mat'],'channel',50); title('Mean differences at channel 50')
+
+% print main results
+limo_eeg(5,fullfile(pwd,'LIMO.mat'))
 
