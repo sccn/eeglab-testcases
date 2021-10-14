@@ -1,5 +1,6 @@
 % adding paths and clearing workspace
 % ------------------------------------------
+runtest_setenvironment;
 
 % adding path for testing
 % -----------------------
@@ -9,6 +10,9 @@ tmpp = fileparts(which('runtest.m'));
 addpath(fullfile(tmpp, 'unittesting_common'));
 addpath(fullfile(tmpp, 'unittesting_common', 'helpfunc'));
 addpath(tmpp);
+rootPath = fileparts(which('checkouteeglab'));
+addpath(fullfile(rootPath, 'STUDY5subjects'));
+addpath(fullfile(rootPath, 'ds002718'));
 
 clear;
 eeglab;
@@ -22,39 +26,36 @@ catch
     ismatlabflag = 1;
 end
 
+excludeFiles = { 'runtest.m' 'scanfoldersendemail.m' 'checkouteeglab.m' ...
+    'ds002718' 'unittesting_tutorial' 'unittesting_common' 'unittesting_limo' };
 if ismatlabflag
     vers = eeg_getversion;
     if str2num(vers(1:2)) == 11
         % exclude for version 11
-        excludeFiles = { ... 
-            'mmo' ... % NOT IMPLEMENTED
-            };
+        excludeFiles = [ excludeFiles(:)' {'mmo'} % NOT IMPLEMENTED
+            ];
     else
-        excludeFiles = { };
     end
 else
     % exclude for Octave
-    excludeFiles = { ...
-        'mmo' ...
-        'eegplotold' ...     % graphical issues
-        'eegplotsold' ...    % graphical issues
-        'eegplotgold' ...    % graphical issues
-        'eeglabexefolder' ... % Compiled version of EEGLAB
-        'openbdf' ...        % issue with missing functionality of fread 'bit24'
-        'readbdf' ...        % issue with missing functionality of fread 'bit24'
-        'hist2' ...          % unknown hggroup property Vertices - histogram plotted differently
-        'gradmap' ...        % Unknown interpolation method
-        'pop_read_erpss'     % mex file issue
-        'pop_signalstat' ... % require stats library normfit (not implemented)
-        'pop_eventstat' ...  % require stats library normfit (not implemented)
-        }; % Octave 12 functions excluded out of 549
+    excludeFiles = { excludeFiles{:} 'mmo' 
+        'eegplotold'       % graphical issues
+        'eegplotsold'      % graphical issues
+        'eegplotgold'      % graphical issues
+        'eeglabexefolder'  % Compiled version of EEGLAB'
+        'openbdf'          % issue with missing functionality of fread bit24
+        'readbdf'          % issue with missing functionality of fread bit24
+        'hist2'            % unknown hggroup property Vertices - histogram plotted differently
+        'gradmap'          % Unknown interpolation method
+        'pop_read_erpss'   % mex file issue
+        'pop_signalstat'   % require stats library normfit (not implemented)
+        'pop_eventstat'    % require stats library normfit (not implemented)
+        'mapcorr'          % too slow
+        'makehtml'         % error
+        'textgui'          % error
+        'copyaxis'         % seg fault
+        };
 end
-
-% Add data paths for tutorial scripts
-% -----------------------------------
-rootPath = fileparts(which('checkouteeglab'));
-addpath(fullfile(rootPath, 'STUDY5subjects'));
-addpath(fullfile(rootPath, 'ds002718'));
 
 % Current sub path
 % ----------------
@@ -65,13 +66,19 @@ currentSubPath = tmpp(indSeparators(end)+1:end);
 % performing testing
 % ------------------
 testcases = dir(pwd);
+[testcases(:).folder] = deal(pwd);
 error_list = runtestcase(testcases, excludeFiles, 0);
 save('-mat', 'error_list.mat', 'error_list');
 pathSave = '/home/arno/nemar/unittestresults';
 if exist(pathSave, 'dir')
     pathSave = fullfile(pathSave, datestr(now, 'YY_mm_dd'));
     if ~exist(pathSave)
-        mkdir(pathSave);
+        try
+            mkdir(pathSave);
+        catch
+            lasterror
+            formaterrorlist('error_list.mat');
+        end
     end
     formaterrorlist('error_list.mat', fullfile(pathSave, [ curFolder '.txt' ]));
 else

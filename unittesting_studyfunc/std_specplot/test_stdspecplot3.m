@@ -105,7 +105,7 @@ for design = 1:length(STUDY.design)
             else
                 X = detrend(X')';
             end;
-            X = bsxfun(@times, X, hamming(size(X,2))'); % apply hamming window even for data trials (not the case in EEGLAB 13)
+            X = bsxfun(@times, X, hamming2(size(X,2))'); % apply hamming window even for data trials (not the case in EEGLAB 13)
         end;
         
         tmp        = fft(X, [], 2);
@@ -131,3 +131,36 @@ end;
 % -----------------------------
 function assert(expression1, expression2, string);
 fprintf(string); if all(abs(expression1 - expression2) < 10^-4), fprintf('Pass\n'); else error('Fail\n'); end;
+
+% -------------------------------------    
+% Adapted from Octave version
+% -------------------------------------
+function c = hamming2(m, opt)
+
+if (nargin < 1 || nargin > 2)
+    help hamming;
+    return;
+end
+
+if (~(isscalar (m) && (m == fix (m)) && (m > 0)))
+    error ('hamming: M must be a positive integer');
+end
+
+N = m - 1;
+if (nargin == 2)
+    switch (opt)
+        case 'periodic'
+            N = m;
+        case 'symmetric'
+            % Default option, same as no option specified.
+        otherwise
+            error ('hamming: window type must be either "periodic" or "symmetric"');
+    end
+end
+
+if (m == 1)
+    c = 1;
+else
+    m = m - 1;
+    c = 0.54 - 0.46 * cos (2 * pi * (0 : m)' / N);
+end
