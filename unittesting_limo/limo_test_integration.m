@@ -454,14 +454,14 @@ end
 
 % ---------------------------------------------------------------------
 cd(root);toc
+limotest'
 if all(contains(limotest,'successful'))
     disp('deleting all created files - test successful')
     try mdir('2nd_level_tests','s'); end
     try rmdir(limo_rootfiles,'s'); end
 else
-    warning('test failure - files were not deleted from drive')
+    error('test failure - files were not deleted from drive')
 end
-limotest'
 
 
 

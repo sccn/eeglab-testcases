@@ -1,3 +1,5 @@
+% Conversation with Cyril 10/13/2021. This script only need to run once. It checks the stats.
+
 % Validation script for the Weighted Least Square minimization method
 % developped in LIMO EEG. There is only two thing to do to run the script
 % and fully reproduce the analysis:
